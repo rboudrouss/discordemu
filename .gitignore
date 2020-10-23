@@ -1,0 +1,11 @@
+# don't own them
+*roms/
+
+# vscode things
+.vscode/*
+
+# must stay secret >:)
+utils/secret_things.py
+
+# python cache duh...
+*__pycache__
