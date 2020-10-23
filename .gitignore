@@ -9,3 +9,6 @@ utils/secret_things.py
 
 # python cache duh...
 *__pycache__
+
+# temporary things i don't wanna delete
+*temp
