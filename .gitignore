@@ -12,3 +12,6 @@ utils/secret_things.py
 
 # temporary things i don't wanna delete
 *temp
+
+# screeshots
+screenshots/*
