@@ -34,13 +34,13 @@ class GameFrontEnd(commands.Cog):
         elif button == "b":
             button = WindowEvent.PRESS_BUTTON_B
             release = WindowEvent.RELEASE_BUTTON_B
-        elif button == "s"
+        elif button == "s":
             button = WindowEvent.PRESS_BUTTON_START
             release = WindowEvent.RELEASE_BUTTON_START
-        elif button == "S"
+        elif button == "S":
             button = WindowEvent.PRESS_BUTTON_SELECT
             release = WindowEvent.RELEASE_BUTTON_SELECT
-        elif button == "d"
+        elif button == "d":
             button = WindowEvent.PRESS_ARROW_DOWN
             release = WindowEvent.RELEASE_ARROW_DOWN
         elif button == "u":
@@ -54,7 +54,7 @@ class GameFrontEnd(commands.Cog):
             release = WindowEvent.RELEASE_ARROW_LEFT
         return (button,release)
 
-    async def click_button(self, button, nb = 30):
+    async def click_button(self, button, nb, ctx):
         button,release = self.get_button(button)
         for i in range(nb):
             self.pyboy.send_input(button)
@@ -81,13 +81,13 @@ class GameFrontEnd(commands.Cog):
             self.pyboy.tick()
         await self.send_last_screen(ctx)
     
-    @commands.command()
+    @commands.command(aliases=["f",'p'])
     async def frame(self, ctx, nb=100):
         for i in range(nb):
             self.pyboy.tick()
         await self.send_last_screen(ctx)
     
-    @commands.command()
+    @commands.command(aliases=["c"])
     async def close(self, ctx):
         if self.mloop:
             self.mloop.terminate()
@@ -95,37 +95,37 @@ class GameFrontEnd(commands.Cog):
         self.pyboy.stop()
         await ctx.send("`game closed`")
     
-    @commands.command()
+    @commands.command(aliases=["a"])
     async def abutton(self, ctx, nb=30):
-        await self.click_button("a",nb)
+        await self.click_button("a",nb,ctx)
     
-    @commands.command()
+    @commands.command(aliases=["b"])
     async def bbutton(self, ctx, nb=30):
-        await self.click_button('b',nb)
+        await self.click_button('b',nb,ctx)
     
-    @commands.command()
+    @commands.command(aliases=["d"])
     async def darrow(self, ctx, nb=30):
-        await self.click_button('d',nb)
+        await self.click_button('d',nb,ctx)
 
-    @commands.command()
+    @commands.command(aliases=["r"])
     async def rarrow(self, ctx, nb=30):
-        await self.click_button('r',nb)
+        await self.click_button('r',nb,ctx)
     
-    @commands.command()
+    @commands.command(aliases=["u"])
     async def uarrow(self, ctx, nb=30):
-        await self.click_button('u',nb)
+        await self.click_button('u',nb,ctx)
     
-    @commands.command()
+    @commands.command(aliases=["l"])
     async def larrow(self, ctx, nb=30):
-        await self.click_button('l',nb)
+        await self.click_button('l',nb,ctx)
     
-    @commands.command()
+    @commands.command(aliases=["s"])
     async def sbutton(self, ctx,nb=30):
-        await self.click_button('s',nb)
+        await self.click_button('s',nb,ctx)
     
-    @commands.command()
+    @commands.command(aliases=["S"])
     async def slbutton(self, ctx,nb=30):
-        await self.click_button('S',nb)
+        await self.click_button('S',nb,ctx)
     
     @commands.command()
     async def loop(self, ctx):
