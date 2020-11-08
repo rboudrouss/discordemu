@@ -1,8 +1,12 @@
-from utils.secret_things import BOT_TOKEN, TESTERS
+from utils.secret_things import BOT_TOKEN, TESTERS #delete this line
 import discord
 from discord.ext import commands
 import os
 import sys
+
+# uncoment these lines 
+# BOT_TOKEN = '' # your bot token goes here
+# TESTERS = [00000000,11111111] # list of testers' ids as a list of ints
 
 # TODO add documentation
 

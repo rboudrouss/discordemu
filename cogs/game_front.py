@@ -20,6 +20,52 @@ class GameFrontEnd(commands.Cog):
             self.pyboy.tick()
         os.listdir("./screenshots/")
         await ctx.send('fromage',file=discord.File("./screenshots/"+os.listdir("./screenshots/")[-1]))
+    
+    def tick(self,nb=30):
+        for i in range(nb):
+            self.pyboy.tick()
+    
+
+    def get_button(self,button):
+        # TODO optimiser ça avec un dico ou en utilisant des ints
+        if button == "a":
+            button = WindowEvent.PRESS_BUTTON_A
+            release = WindowEvent.RELEASE_BUTTON_A
+        elif button == "b":
+            button = WindowEvent.PRESS_BUTTON_B
+            release = WindowEvent.RELEASE_BUTTON_B
+        elif button == "s"
+            button = WindowEvent.PRESS_BUTTON_START
+            release = WindowEvent.RELEASE_BUTTON_START
+        elif button == "S"
+            button = WindowEvent.PRESS_BUTTON_SELECT
+            release = WindowEvent.RELEASE_BUTTON_SELECT
+        elif button == "d"
+            button = WindowEvent.PRESS_ARROW_DOWN
+            release = WindowEvent.RELEASE_ARROW_DOWN
+        elif button == "u":
+            button = WindowEvent.PRESS_ARROW_UP
+            release = WindowEvent.PRESS_ARROW_UP
+        elif button == "r":
+            button = WindowEvent.PRESS_ARROW_RIGHT
+            release = WindowEvent.RELEASE_ARROW_LEFT
+        elif button == 'l':
+            button = WindowEvent.PRESS_ARROW_LEFT
+            release = WindowEvent.RELEASE_ARROW_LEFT
+        return (button,release)
+
+    async def click_button(self, button, nb = 30):
+        button,release = self.get_button(button)
+        for i in range(nb):
+            self.pyboy.send_input(button)
+            self.pyboy.tick()
+        for i in range(nb):
+            self.pyboy.send_input(release)
+            self.pyboy.tick()
+        for i in range(100):
+            self.pyboy.tick()
+        await self.send_last_screen(ctx)
+        
 
     # events
     @commands.Cog.listener()
@@ -51,102 +97,35 @@ class GameFrontEnd(commands.Cog):
     
     @commands.command()
     async def abutton(self, ctx, nb=30):
-        print(nb)
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.PRESS_BUTTON_A)
-            self.pyboy.tick()
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_A)
-            self.pyboy.tick()
-        for i in range(100):
-            self.pyboy.tick()
-        await self.send_last_screen(ctx)
+        await self.click_button("a",nb)
     
     @commands.command()
     async def bbutton(self, ctx, nb=30):
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.PRESS_BUTTON_B)
-            self.pyboy.tick()
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_B)
-            self.pyboy.tick()
-        for i in range(100):
-            self.pyboy.tick()
-        await self.send_last_screen(ctx)
+        await self.click_button('b',nb)
     
     @commands.command()
     async def darrow(self, ctx, nb=30):
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.PRESS_ARROW_DOWN)
-            self.pyboy.tick()
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_DOWN)
-            self.pyboy.tick()
-        for i in range(100):
-            self.pyboy.tick()
-        await self.send_last_screen(ctx)
+        await self.click_button('d',nb)
 
     @commands.command()
     async def rarrow(self, ctx, nb=30):
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.PRESS_ARROW_RIGHT)
-            self.pyboy.tick()
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_RIGHT)
-            self.pyboy.tick()
-        for i in range(100):
-            self.pyboy.tick()
-        await self.send_last_screen(ctx)
+        await self.click_button('r',nb)
     
     @commands.command()
     async def uarrow(self, ctx, nb=30):
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.PRESS_ARROW_UP)
-            self.pyboy.tick()
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_UP)
-            self.pyboy.tick()
-        for i in range(100):
-            self.pyboy.tick()
-        await self.send_last_screen(ctx)
+        await self.click_button('u',nb)
     
     @commands.command()
     async def larrow(self, ctx, nb=30):
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.PRESS_ARROW_LEFT)
-            self.pyboy.tick()
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.RELEASE_ARROW_LEFT)
-            self.pyboy.tick()
-        for i in range(100):
-            self.pyboy.tick()
-        await self.send_last_screen(ctx)
-    
+        await self.click_button('l',nb)
     
     @commands.command()
     async def sbutton(self, ctx,nb=30):
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.PRESS_BUTTON_START)
-            self.pyboy.tick()
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_START)
-            self.pyboy.tick()
-        for i in range(100):
-            self.pyboy.tick()
-        await self.send_last_screen(ctx)
+        await self.click_button('s',nb)
     
     @commands.command()
     async def slbutton(self, ctx,nb=30):
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.PRESS_BUTTON_SELECT)
-            self.pyboy.tick()
-        for i in range(nb):
-            self.pyboy.send_input(WindowEvent.RELEASE_BUTTON_SELECT)
-            self.pyboy.tick()
-        for i in range(100):
-            self.pyboy.tick()
-        await self.send_last_screen(ctx)
-    
+        await self.click_button('S',nb)
     
     @commands.command()
     async def loop(self, ctx):
