@@ -11,21 +11,42 @@ class GameFrontEnd(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.mloop = None
+        self.message = None
 
-    async def send_last_screen(self, ctx):
+    async def add_allreactions(self):
+        print("\nadding reactions...")
+        await self.message.add_reaction('⬅️')  # arrow left
+        await self.message.add_reaction('⬆️')  # arrow up
+        await self.message.add_reaction('⬇️')  # arrow down
+        await self.message.add_reaction('➡️')  # arrow right
+        await self.message.add_reaction('🅰️')  # a button
+        await self.message.add_reaction('🅱️')  # b button
+        await self.message.add_reaction('⏺️')
+        await self.message.add_reaction('🔴')
+        print('reactions added !')
+
+    async def send_last_screen(self, ctx=None):  
         if len(os.listdir("./screenshots/"))>10:
             os.remove("./screenshots/"+os.listdir("./screenshots/")[0])
         self.pyboy.send_input(WindowEvent.SCREENSHOT_RECORD)
-        for i in range(100):
-            self.pyboy.tick()
+        self.pyboy.tick()
         os.listdir("./screenshots/")
-        await ctx.send('fromage',file=discord.File("./screenshots/"+os.listdir("./screenshots/")[-1]))
+        if not self.message:
+            channel = self.client.get_channel(774982243524280360)
+            message = await channel.send(file=discord.File("./screenshots/"+os.listdir("./screenshots/")[-1]))
+            url = message.attachments[0].url
+            em = discord.Embed()
+            em.set_image(url=url)
+            self.message = await ctx.send(embed=em)
+            await self.add_allreactions()
+        else:
+            channel = self.client.get_channel(774982243524280360)
+            message = await channel.send(file=discord.File("./screenshots/"+os.listdir("./screenshots/")[-1]))
+            url = message.attachments[0].url
+            em = discord.Embed()
+            em.set_image(url=url)
+            await self.message.edit(embed=em)
     
-    def tick(self,nb=30):
-        for i in range(nb):
-            self.pyboy.tick()
-    
-
     def get_button(self,button):
         # TODO optimiser ça avec un dico ou en utilisant des ints
         if button == "a":
@@ -48,33 +69,68 @@ class GameFrontEnd(commands.Cog):
             release = WindowEvent.PRESS_ARROW_UP
         elif button == "r":
             button = WindowEvent.PRESS_ARROW_RIGHT
-            release = WindowEvent.RELEASE_ARROW_LEFT
+            release = WindowEvent.RELEASE_ARROW_RIGHT
         elif button == 'l':
             button = WindowEvent.PRESS_ARROW_LEFT
             release = WindowEvent.RELEASE_ARROW_LEFT
         return (button,release)
 
-    async def click_button(self, button, nb, ctx):
+    async def click_button(self, button, nb, ctx=None):
         button,release = self.get_button(button)
-        for i in range(nb):
-            self.pyboy.send_input(button)
+        self.pyboy.send_input(button)
+        for i in range(30):
             self.pyboy.tick()
-        for i in range(nb):
-            self.pyboy.send_input(release)
-            self.pyboy.tick()
-        for i in range(100):
-            self.pyboy.tick()
+        self.pyboy.send_input(release)
+        # for i in range(nb):
+        #     self.pyboy.send_input(button)
+        #     self.pyboy.tick()
+        # for i in range(nb):
+        #     self.pyboy.send_input(release)
+        #     self.pyboy.tick()
+        # for i in range(30):
+        #     self.pyboy.tick()
         await self.send_last_screen(ctx)
+        if ctx:
+            await ctx.message.delete()
         
 
     # events
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        pass
+        if self.user != user:
+            return
+        if reaction.emoji in ["⬅️", "⬆️", "⬇️", "➡️", "🅰️", "🅱️",'⏺️','🔴']:
+            try:
+                await reaction.remove(user)
+            except discord.errors.Forbidden:
+                await self.client.send_message(user, 'An error has occured,\nplease use `move` and `interact` commands instead')
+            except:  # TODO find this error => not enough permission
+                await self.client.send_message(user, 'I actually need the "manage messages" permission to actually delete the reaction --\'')
+
+        if reaction.emoji == "⬅️":
+            await self.click_button("l",30)
+        elif reaction.emoji == "⬆️":
+            await self.click_button("u",30)
+        elif reaction.emoji == "⬇️":
+            await self.click_button("d",30)
+        elif reaction.emoji == "➡️":
+            await self.click_button("r",30)
+        elif reaction.emoji == "🅰️":
+            await self.click_button("a",30)
+        elif reaction.emoji == "🅱️":
+            await self.click_button("b",30)
+        elif reaction.emoji == '⏺️':
+            await self.click_button("s",30)
+        elif reaction.emoji == '🔴':
+            for i in range(120):
+                self.pyboy.tick()
+            await self.send_last_screen()
+
 
     # commands
     @commands.command(aliases=["pokemon"])
     async def init(self, ctx):
+        self.user = ctx.author
         self.pyboy = pokemon()
         await ctx.send("please wait")
         for i in range(1500):
@@ -82,10 +138,11 @@ class GameFrontEnd(commands.Cog):
         await self.send_last_screen(ctx)
     
     @commands.command(aliases=["f",'p'])
-    async def frame(self, ctx, nb=100):
+    async def frame(self, ctx, nb=120):
         for i in range(nb):
             self.pyboy.tick()
         await self.send_last_screen(ctx)
+        await ctx.message.delete()
     
     @commands.command(aliases=["c"])
     async def close(self, ctx):
