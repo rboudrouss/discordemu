@@ -12,6 +12,19 @@ class GameFrontEnd(commands.Cog):
         self.client = client
         self.mloop = None
         self.message = None
+        self.BINDS = {
+            # a/b buttons
+            'a':(WindowEvent.PRESS_BUTTON_A, WindowEvent.RELEASE_BUTTON_A),
+            'b':(WindowEvent.PRESS_BUTTON_B, WindowEvent.RELEASE_BUTTON_B),
+            # start/select buttons
+            's':(WindowEvent.PRESS_BUTTON_START,WindowEvent.RELEASE_BUTTON_START),
+            'S':(WindowEvent.PRESS_BUTTON_SELECT,WindowEvent.RELEASE_BUTTON_SELECT),
+            # arrows
+            'u':(WindowEvent.PRESS_ARROW_UP,WindowEvent.RELEASE_ARROW_UP),
+            'd':(WindowEvent.PRESS_ARROW_DOWN,WindowEvent.RELEASE_ARROW_DOWN),
+            'r':(WindowEvent.PRESS_ARROW_RIGHT,WindowEvent.RELEASE_ARROW_RIGHT),
+            'l':(WindowEvent.PRESS_ARROW_LEFT,WindowEvent.RELEASE_ARROW_LEFT)
+        }
 
     async def add_allreactions(self):
         print("\nadding reactions...")
@@ -21,59 +34,33 @@ class GameFrontEnd(commands.Cog):
         await self.message.add_reaction('➡️')  # arrow right
         await self.message.add_reaction('🅰️')  # a button
         await self.message.add_reaction('🅱️')  # b button
-        await self.message.add_reaction('⏺️')
-        await self.message.add_reaction('🔴')
+        await self.message.add_reaction('⏺️')  # Start button
+        await self.message.add_reaction('🔴')  # frames
         print('reactions added !')
 
-    async def send_last_screen(self, ctx=None):  
+    async def send_last_screen(self, ctx=None):
+
         if len(os.listdir("./screenshots/"))>10:
             os.remove("./screenshots/"+os.listdir("./screenshots/")[0])
+        
         self.pyboy.send_input(WindowEvent.SCREENSHOT_RECORD)
         self.pyboy.tick()
         os.listdir("./screenshots/")
+        
+        channel = self.client.get_channel(774982243524280360)
+        message = await channel.send(file=discord.File("./screenshots/"+os.listdir("./screenshots/")[-1]))
+        url = message.attachments[0].url
+        em = discord.Embed()
+        em.set_image(url=url)
+        
         if not self.message:
-            channel = self.client.get_channel(774982243524280360)
-            message = await channel.send(file=discord.File("./screenshots/"+os.listdir("./screenshots/")[-1]))
-            url = message.attachments[0].url
-            em = discord.Embed()
-            em.set_image(url=url)
             self.message = await ctx.send(embed=em)
             await self.add_allreactions()
         else:
-            channel = self.client.get_channel(774982243524280360)
-            message = await channel.send(file=discord.File("./screenshots/"+os.listdir("./screenshots/")[-1]))
-            url = message.attachments[0].url
-            em = discord.Embed()
-            em.set_image(url=url)
             await self.message.edit(embed=em)
     
     def get_button(self,button):
-        # TODO optimiser ça avec un dico ou en utilisant des ints
-        if button == "a":
-            button = WindowEvent.PRESS_BUTTON_A
-            release = WindowEvent.RELEASE_BUTTON_A
-        elif button == "b":
-            button = WindowEvent.PRESS_BUTTON_B
-            release = WindowEvent.RELEASE_BUTTON_B
-        elif button == "s":
-            button = WindowEvent.PRESS_BUTTON_START
-            release = WindowEvent.RELEASE_BUTTON_START
-        elif button == "S":
-            button = WindowEvent.PRESS_BUTTON_SELECT
-            release = WindowEvent.RELEASE_BUTTON_SELECT
-        elif button == "d":
-            button = WindowEvent.PRESS_ARROW_DOWN
-            release = WindowEvent.RELEASE_ARROW_DOWN
-        elif button == "u":
-            button = WindowEvent.PRESS_ARROW_UP
-            release = WindowEvent.PRESS_ARROW_UP
-        elif button == "r":
-            button = WindowEvent.PRESS_ARROW_RIGHT
-            release = WindowEvent.RELEASE_ARROW_RIGHT
-        elif button == 'l':
-            button = WindowEvent.PRESS_ARROW_LEFT
-            release = WindowEvent.RELEASE_ARROW_LEFT
-        return (button,release)
+        return self.BINDS.get(button)
 
     async def click_button(self, button, nb, ctx=None):
         button,release = self.get_button(button)
@@ -81,14 +68,6 @@ class GameFrontEnd(commands.Cog):
         for i in range(30):
             self.pyboy.tick()
         self.pyboy.send_input(release)
-        # for i in range(nb):
-        #     self.pyboy.send_input(button)
-        #     self.pyboy.tick()
-        # for i in range(nb):
-        #     self.pyboy.send_input(release)
-        #     self.pyboy.tick()
-        # for i in range(30):
-        #     self.pyboy.tick()
         await self.send_last_screen(ctx)
         if ctx:
             await ctx.message.delete()
@@ -99,12 +78,10 @@ class GameFrontEnd(commands.Cog):
     async def on_reaction_add(self, reaction, user):
         if self.user != user:
             return
-        if reaction.emoji in ["⬅️", "⬆️", "⬇️", "➡️", "🅰️", "🅱️",'⏺️','🔴']:
+        elif reaction.emoji in ["⬅️", "⬆️", "⬇️", "➡️", "🅰️", "🅱️",'⏺️','🔴']:
             try:
                 await reaction.remove(user)
             except discord.errors.Forbidden:
-                await self.client.send_message(user, 'An error has occured,\nplease use `move` and `interact` commands instead')
-            except:  # TODO find this error => not enough permission
                 await self.client.send_message(user, 'I actually need the "manage messages" permission to actually delete the reaction --\'')
 
         if reaction.emoji == "⬅️":
